@@ -20,4 +20,3 @@ flowchart TD
     style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style D fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
     style E fill:#e8eaf6,stroke:#303f9f,stroke-width:2px
-
