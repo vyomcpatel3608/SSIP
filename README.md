@@ -1,54 +1,22 @@
-# Thermal Authorization System Architecture
+# Sports Thermography Kiosk - Architecture Flowcharts
 
-This repository contains the software and machine learning pipeline for our privacy-focused thermal authorization system using the MLX90640 sensor and Raspberry Pi 5.
+This document outlines the detailed system architecture and the high-level operational flow for the Edge-AI Sports Recovery Kiosk.
 
-## System Block Diagram
+---
+
+## 1. High-Level Abstract Flowchart
+
+This condensed flowchart highlights the 5 main operational stages of the kiosk system.
 
 ```mermaid
-graph TD
-    subgraph Physical_Input ["1. Physical Input Layer"]
-        HumanSubject["Human Subject radiates IR"] --> MLXSensor["MLX90640 32x24 Array"]
-        MLXSensor -->|Hardware I2C Stream| RaspberryPi["Raspberry Pi 5"]
-    end
+flowchart TD
+    A["1. SENSING & DATA INPUT<br/>(MLX90640 Thermal Sensor Array)"] --> B["2. RASPBERRY PI 5 CORE<br/>(Data Preprocessing & ROI)"]
+    B --> C["3. LOCAL AI ENGINE (CNN)<br/>(Thermal Delta & Feature Vector)"]
+    C --> D["4. DATABASE LOGGING<br/>(PostgreSQL Baseline & Sessions)"]
+    C --> E["5. KIOSK & COACH APP<br/>(Heatmap & Recovery Score)"]
 
-    subgraph Raspberry_Pi ["2. Raspberry Pi 5 Core Processing"]
-        direction TB
-        
-        RaspberryPi -->|Process Raw Matrix| DataPreprocessing["Data Preprocessing"]
-        
-        DataPreprocessing -->|1. Background Subtraction| Thresh
-        DataPreprocessing -->|2. Iso. Human Temp Span| Thresh
-        DataPreprocessing -->|3. Normalize 0.0-1.0| Thresh["Processed Normalized Matrix"]
-        
-        Thresh --> FeatureExtraction["Geometric Feature Extraction"]
-        FeatureExtraction -->|32x24 Heat Matrix| TFLite
-        
-        subgraph AI_Authorization_Engine ["3. AI Authorization Engine"]
-            TFLite["TFLite / ML Classifier"] -->|Query Feature Vector| DB[("Local authorized DB")]
-            TFLite -->|Match Confidence %| ThresholdCheck{"Confidence >= 90%?"}
-            
-            ThresholdCheck -->|YES| AccessGranted["Access Granted"]
-            ThresholdCheck -->|NO| AccessDenied["Access Denied"]
-        end
-
-        subgraph Monitoring_Visualization ["4. Monitoring & Visualization"]
-            Thresh -->|Live Processed Matrix| VisualGen["Generate Heatmap Image"]
-            VisualGen -->|Colormap Applied e.g. Jet| UI["User Interface App"]
-            
-            AccessGranted -->|State: Success| UI
-            AccessDenied -->|State: Failed| UI
-            
-            UI -->|Render System State & Heatmap| Screen["Physical Screen"]
-            UI -->|Prompt User Override| ManualAuth{"Manual Override Required?"}
-            ManualAuth -->|User Input: Allow| AccessGranted
-            ManualAuth -->|User Input: Deny| AccessDenied
-        end
-    end
-
-    subgraph Physical_Outputs ["5. Physical Outputs (Actuation)"]
-        AccessGranted -->|GPIO Trigger HIGH| Relay["12V Relay Module"]
-        Relay -->|Switch 12V Power| Solenoid["Solenoid Door Lock Open"]
-        
-        AccessDenied -->|Log Failed Attempt| DataPreprocessing
-    end
-```
+    style A fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style B fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style D fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style E fill:#e8eaf6,stroke:#303f9f,stroke-width:2px
